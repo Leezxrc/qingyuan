@@ -20,6 +20,22 @@ def start_control_server(runtime, voice):
             self.wfile.write(payload)
 
         def status(self):
+            last_reply, last_reply_time = (
+                runtime.get_last_assistant_text()
+                if hasattr(runtime, "get_last_assistant_text")
+                else ("", 0.0)
+            )
+
+            try:
+                import time
+                reply_age = (
+                    max(0.0, time.monotonic() - last_reply_time)
+                    if last_reply_time
+                    else None
+                )
+            except Exception:
+                reply_age = None
+
             return {
                 "ok": True,
                 "name": "清渊",
@@ -33,6 +49,13 @@ def start_control_server(runtime, voice):
                 "speaking": bool(runtime.tts_speaking.is_set()),
                 "busy": bool(runtime.agent_busy.is_set()),
                 "confirming": bool(runtime.confirm_active.is_set()),
+                "desktop_active": bool(runtime.desktop_task_is_active()),
+                "last_reply": last_reply,
+                "last_reply_age": (
+                    round(reply_age, 1)
+                    if reply_age is not None
+                    else None
+                ),
             }
 
         def do_GET(self):
@@ -57,6 +80,14 @@ def start_control_server(runtime, voice):
             if path == "/standby":
                 voice.stop_speaking()
                 runtime.go_standby()
+                self.send_json(200, self.status())
+                return
+
+            if path == "/wake":
+                # 点击桌宠后，下一轮语音无需再次说唤醒词。
+                runtime.voice_listen_enabled = True
+                voice.cancel_listen()
+                runtime.activate_conversation()
                 self.send_json(200, self.status())
                 return
 

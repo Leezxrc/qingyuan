@@ -28,6 +28,12 @@ class RuntimeState:
         self.last_tts_text = ""
         self.last_tts_end_time = 0.0
 
+        # 桌宠表现层读取的最近回复。
+        # 仅驻留内存，不写入 memory / data / knowledge。
+        self.assistant_reply_lock = threading.Lock()
+        self.last_assistant_text = ""
+        self.last_assistant_time = 0.0
+
         self.voice_enabled = True
         self.voice_listen_enabled = True
 
@@ -147,6 +153,24 @@ class RuntimeState:
             self.sleep_notice_shown = True
             self.listening_notice_shown = False
             return True
+
+    # ---------------- desktop pet / presentation ----------------
+
+    def set_last_assistant_text(self, text):
+        value = str(text).strip()
+        if not value:
+            return
+
+        with self.assistant_reply_lock:
+            self.last_assistant_text = value
+            self.last_assistant_time = time.monotonic()
+
+    def get_last_assistant_text(self):
+        with self.assistant_reply_lock:
+            return (
+                self.last_assistant_text,
+                self.last_assistant_time,
+            )
 
     # ---------------- desktop task ----------------
 

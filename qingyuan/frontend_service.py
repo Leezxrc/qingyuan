@@ -1,5 +1,6 @@
 import os
 import queue
+import re
 import subprocess
 import sys
 import threading
@@ -242,6 +243,66 @@ def _ensure_backend():
             last_status
         ),
     }
+
+
+def _start_desktop_pet():
+    """启动轻量桌宠表现层。失败不会影响清渊主体。"""
+    try:
+        python_exe = sys.executable
+
+        if os.name == "nt":
+            candidate = os.path.join(
+                os.path.dirname(python_exe),
+                "pythonw.exe",
+            )
+            if os.path.isfile(candidate):
+                python_exe = candidate
+
+        creationflags = 0
+        if os.name == "nt":
+            creationflags = getattr(
+                subprocess,
+                "CREATE_NO_WINDOW",
+                0,
+            )
+
+        return subprocess.Popen(
+            [
+                python_exe,
+                "-m",
+                "qingyuan.desktop_pet",
+            ],
+            cwd=r"C:\MyAgent",
+            shell=False,
+            creationflags=creationflags,
+        )
+    except Exception as e:
+        print(f"\n[桌宠] 启动失败：{e}")
+        return None
+
+
+def _extract_assistant_reply(result):
+    """从 Backend 返回值中提取供桌宠气泡展示的最近回复。"""
+    if not isinstance(result, dict):
+        return ""
+
+    direct = str(result.get("reply", "")).strip()
+    if direct:
+        return direct
+
+    logs = str(result.get("logs", ""))
+    if not logs:
+        return ""
+
+    matches = re.findall(
+        r"(?:^|\n)清渊：([^\n]+)",
+        logs,
+    )
+
+    if not matches:
+        return ""
+
+    return str(matches[-1]).strip()
 
 
 def run():
@@ -488,6 +549,9 @@ def run():
 
     for thread in threads:
         thread.start()
+
+    # 桌宠只是表现层；启动失败不影响 Agent / STT / TTS / Action Host。
+    pet_process = _start_desktop_pet()
 
     try:
         while not (
@@ -868,12 +932,29 @@ def run():
                     logs
                 )
 
+            pet_reply = _extract_assistant_reply(
+                result
+            )
+            if pet_reply:
+                runtime.set_last_assistant_text(
+                    pet_reply
+                )
+
             runtime.activate_conversation()
 
     except KeyboardInterrupt:
         runtime.stop_event.set()
 
     finally:
+        if (
+            pet_process is not None
+            and pet_process.poll() is None
+        ):
+            try:
+                pet_process.terminate()
+            except Exception:
+                pass
+
         if (
             AUTO_SHUTDOWN_LOCAL_BACKEND
         ):

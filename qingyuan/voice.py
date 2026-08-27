@@ -30,6 +30,12 @@ class VoiceService:
         if not text:
             return
 
+        # 桌宠气泡与 TTS 同步。仅写入当前运行时内存。
+        try:
+            self.runtime.set_last_assistant_text(text)
+        except Exception:
+            pass
+
         # 记录本次 TTS 文本，用于后续麦克风自回声过滤。
         with self.runtime.echo_lock:
             self.runtime.last_tts_text = text
