@@ -1,0 +1,46 @@
+name: Build Qingyuan EXE
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "qingyuan_launcher.py"
+      - ".github/workflows/build-qingyuan-exe.yml"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: python -m pip install pyinstaller
+
+      - name: Build Qingyuan.exe
+        shell: powershell
+        run: |
+          $iconArgs = @()
+          if (Test-Path "assets/qingyuan.ico") {
+            $iconArgs = @("--icon", "assets/qingyuan.ico")
+          }
+          python -m PyInstaller `
+            --noconfirm `
+            --clean `
+            --onefile `
+            --windowed `
+            --name Qingyuan `
+            @iconArgs `
+            qingyuan_launcher.py
+
+      - name: Upload Qingyuan.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: Qingyuan-Windows-Launcher
+          path: dist/Qingyuan.exe

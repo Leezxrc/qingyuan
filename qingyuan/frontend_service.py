@@ -325,6 +325,17 @@ def run():
         runtime
     )
 
+    # 控制接口必须尽早启动。
+    # Launcher / Tray / Desktop Pet 通过 8767 判断 Frontend 是否存活。
+    # 不再等待 Backend 初始化和启动播报完成后才开放健康接口。
+    control_thread = threading.Thread(
+        target=start_control_server,
+        args=(runtime, voice),
+        daemon=True,
+        name="qingyuan-control",
+    )
+    control_thread.start()
+
     permission = (
         TaskPermissionBroker(
             runtime,
@@ -502,8 +513,9 @@ def run():
         "=" * 60
     )
 
+    # 启动播报不再包含唤醒词，避免音箱 -> 麦克风形成自唤醒。
     voice.speak(
-        "清渊已启动。",
+        "已启动。",
         allow_barge_in=False,
     )
 
@@ -525,14 +537,6 @@ def run():
             )
 
     threads = [
-        threading.Thread(
-            target=start_control_server,
-            args=(
-                runtime,
-                voice,
-            ),
-            daemon=True,
-        ),
         threading.Thread(
             target=voice.keyboard_worker,
             daemon=True,
