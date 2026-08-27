@@ -1,0 +1,19 @@
+清渊微信视觉模板
+================================
+
+模板目录：
+C:\MyAgent\assets\wechat\
+
+参考截图：
+C:\MyAgent\assets\wechat\reference_main.png
+
+区域配置：
+C:\MyAgent\assets\wechat\layout.json
+
+layout.json 当前包含：
+- search_box
+- search_results
+- chat_header
+- message_box
+
+参考截图用于帮助后续清渊对当前微信截图进行布局匹配。

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "coordinate_system": "relative_to_window",
+  "regions": {
+    "search_box": {
+      "box": [
+        0.065,
+        0.045,
+        0.245,
+        0.105
+      ],
+      "description": "微信左上方搜索框"
+    },
+    "search_results": {
+      "box": [
+        0.055,
+        0.1,
+        0.29,
+        0.72
+      ],
+      "description": "微信左侧搜索结果区域"
+    },
+    "chat_header": {
+      "box": [
+        0.29,
+        0.0,
+        0.98,
+        0.13
+      ],
+      "description": "微信右侧当前聊天标题区域"
+    },
+    "message_box": {
+      "box": [
+        0.29,
+        0.74,
+        0.98,
+        0.985
+      ],
+      "description": "微信右侧底部消息输入区域"
+    }
+  }
+}

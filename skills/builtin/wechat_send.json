@@ -1,0 +1,30 @@
+{
+  "name": "微信发送消息",
+  "description": "在微信中搜索指定聊天，确认目标后发送用户明确给出的消息。",
+  "triggers": [
+    "微信发送",
+    "微信群",
+    "群里发送",
+    "发到家庭群",
+    "微信里发"
+  ],
+  "steps": [
+    "绑定微信窗口",
+    "搜索目标聊天",
+    "精确点击目标搜索结果",
+    "验证当前聊天标题",
+    "定位消息输入区域",
+    "输入用户原始消息",
+    "发送",
+    "验证真实结果"
+  ],
+  "required_capabilities": [
+    "window_read",
+    "window_control",
+    "screen_read",
+    "mouse",
+    "keyboard"
+  ],
+  "verification": "目标聊天必须确认；发送工具不得返回 NO_MATCH、SENT_UNCERTAIN 或明确失败。",
+  "safety": "不能因为 skill 存在而绕过 Task Permit。"
+}

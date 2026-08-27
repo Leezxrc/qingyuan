@@ -1,0 +1,100 @@
+import json
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+from .config import CONTROL_HOST, CONTROL_PORT
+
+
+def start_control_server(runtime, voice):
+    class Handler(BaseHTTPRequestHandler):
+        def send_json(self, code, data):
+            payload = json.dumps(
+                data, ensure_ascii=False
+            ).encode("utf-8")
+            self.send_response(code)
+            self.send_header(
+                "Content-Type",
+                "application/json; charset=utf-8",
+            )
+            self.send_header("Content-Length", str(len(payload)))
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def status(self):
+            return {
+                "ok": True,
+                "name": "清渊",
+                "mic_enabled": bool(runtime.voice_listen_enabled),
+                "conversation_active": bool(
+                    runtime.is_conversation_active()
+                ),
+                "active_remaining": round(
+                    runtime.active_remaining(), 1
+                ),
+                "speaking": bool(runtime.tts_speaking.is_set()),
+                "busy": bool(runtime.agent_busy.is_set()),
+                "confirming": bool(runtime.confirm_active.is_set()),
+            }
+
+        def do_GET(self):
+            path = self.path.split("?", 1)[0]
+
+            if path in ["/health", "/status"]:
+                self.send_json(200, self.status())
+                return
+
+            if path == "/mic/on":
+                runtime.voice_listen_enabled = True
+                self.send_json(200, self.status())
+                return
+
+            if path == "/mic/off":
+                runtime.voice_listen_enabled = False
+                voice.cancel_listen()
+                runtime.go_standby()
+                self.send_json(200, self.status())
+                return
+
+            if path == "/standby":
+                voice.stop_speaking()
+                runtime.go_standby()
+                self.send_json(200, self.status())
+                return
+
+            if path == "/stop":
+                voice.stop_speaking()
+                self.send_json(200, self.status())
+                return
+
+            if path == "/quit":
+                voice.stop_speaking()
+                voice.cancel_listen()
+                runtime.stop_event.set()
+                self.send_json(
+                    200,
+                    {"ok": True, "quitting": True},
+                )
+                return
+
+            self.send_json(
+                404,
+                {"ok": False, "error": "Not found"},
+            )
+
+        def log_message(self, format, *args):
+            return
+
+    server = ThreadingHTTPServer(
+        (CONTROL_HOST, CONTROL_PORT),
+        Handler,
+    )
+    server.timeout = 0.5
+
+    print(
+        f"本地控制接口：http://{CONTROL_HOST}:{CONTROL_PORT}"
+    )
+
+    try:
+        while not runtime.stop_event.is_set():
+            server.handle_request()
+    finally:
+        server.server_close()

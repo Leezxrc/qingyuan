@@ -1,0 +1,22 @@
+{
+  "skill_key": "lock_screen",
+  "name": "锁屏操作",
+  "description": "根据用户指令执行锁屏操作",
+  "triggers": [
+    "帮我锁屏",
+    "锁屏"
+  ],
+  "parameters": [
+    "<chat_target>"
+  ],
+  "steps": [
+    "直接回答用户",
+    "调用系统锁屏功能"
+  ],
+  "required_capabilities": [],
+  "verification": "确认系统已锁屏",
+  "safety": "Skill 仅提供经验流程，每次执行仍必须经过 Task Permit。",
+  "source": "learned_from_success",
+  "success_count": 1,
+  "last_updated": 1787815454.3958309
+}

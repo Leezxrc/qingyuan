@@ -1,0 +1,24 @@
+{
+  "name": "浏览器搜索",
+  "description": "在已打开浏览器中新标签页搜索用户指定内容。",
+  "triggers": [
+    "浏览器搜索",
+    "Chrome搜索",
+    "谷歌搜索",
+    "搜一下"
+  ],
+  "steps": [
+    "绑定浏览器窗口",
+    "打开新标签页",
+    "输入用户搜索词",
+    "提交搜索",
+    "确认搜索动作真实执行"
+  ],
+  "required_capabilities": [
+    "window_read",
+    "window_control",
+    "keyboard"
+  ],
+  "verification": "必须检测到 browser_search_new_tab 或等价真实搜索动作。",
+  "safety": "不能扩大到用户未要求的网站操作。"
+}

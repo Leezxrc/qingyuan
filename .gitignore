@@ -1,0 +1,75 @@
+# ==========================================
+# Qingyuan / MyAgent Git Ignore
+# ==========================================
+
+# ---------- Python cache ----------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# ---------- Python / Conda environments ----------
+.venv/
+venv/
+env/
+stt_env/
+cosyvoice_env/
+agent_env/
+
+# ---------- IDE ----------
+.vscode/
+.idea/
+
+# ---------- Runtime / Cache ----------
+logs/
+log/
+temp/
+tmp/
+cache/
+.cache/
+
+# ---------- Qingyuan persistent data ----------
+memory/
+data/
+knowledge/
+
+# ---------- Qingyuan workspace ----------
+workspace/
+
+# ---------- Voice runtime ----------
+voice/runtime/
+
+# ---------- AI models ----------
+pretrained_models/
+models/
+
+# ---------- CosyVoice external dependency ----------
+CosyVoice/
+
+*.safetensors
+*.gguf
+*.ggml
+*.pth
+*.pt
+*.onnx
+
+# ---------- Runtime audio ----------
+*.wav
+*.mp3
+*.flac
+
+# ---------- Secrets ----------
+.env
+.env.*
+*.key
+*.pem
+secrets/
+credentials/
+
+# ---------- Windows ----------
+Thumbs.db
+desktop.ini
+
+# ---------- macOS ----------
+.DS_Store

@@ -1,0 +1,28 @@
+以后不局限微信。
+
+把任何软件的“完整窗口截图”放到这里：
+
+C:\MyAgent\assets\visual\inbox\
+
+例如：
+- 微信
+- Chrome
+- Edge
+- Windows 文件资源管理器
+- Steam
+- Discord
+- 其他桌面软件
+
+文件名随便。
+
+清渊会自动判断软件类型，并归档到：
+
+C:\MyAgent\assets\visual\apps\<软件名>\
+
+每个软件会自动形成：
+
+originals\
+examples\
+metadata\
+
+你不需要自己分类。
