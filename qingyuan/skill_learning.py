@@ -282,6 +282,7 @@ intent:
             "scroll",
             "app_launch",
             "power_control",
+            "code_execute",
             "file_write",
             "file_move",
             "file_delete",
@@ -309,6 +310,56 @@ intent:
 
         return result
 
+    @staticmethod
+    def _learning_safe_tool_results(
+        intent,
+        tool_results,
+    ):
+        """
+        技能学习只需要“流程证据”，不需要保存源码正文。
+
+        Coding Agent 的 read/diff/tree 结果可能包含大量项目内容，
+        因此在送入技能提炼器之前先压缩为结构化占位信息。
+        这不会改变实际任务工具结果，只影响后续技能学习输入。
+        """
+        if intent != "coding":
+            return tool_results
+
+        safe = []
+        for name, result in (tool_results or []):
+            text = str(result or "")
+
+            if name == "code_read_file":
+                summary = "<code_read_result omitted from skill learning>"
+            elif name == "code_git_diff":
+                summary = "<git_diff_result omitted from skill learning>"
+            elif name == "code_project_tree":
+                summary = "<project_tree omitted from skill learning>"
+            elif name == "code_write_file":
+                summary = (
+                    "CODE_WRITE_OK"
+                    if "CODE_WRITE_OK" in text
+                    else text.splitlines()[0][:240]
+                )
+            elif name == "code_run_checks":
+                # 只保留检查结论首行，不把测试日志/路径细节沉淀进技能。
+                summary = (text.splitlines()[0][:300] if text else "")
+            elif name == "code_begin_session":
+                summary = (
+                    "CODING_SESSION_STARTED"
+                    if "CODING_SESSION_STARTED" in text
+                    else text.splitlines()[0][:240]
+                )
+            elif name == "code_session_status":
+                summary = "<coding_session_status>"
+            else:
+                # finish / rollback 等只需保留少量状态文本。
+                summary = text[:500]
+
+            safe.append((name, summary))
+
+        return safe
+
     def record_success(
         self,
         *,
@@ -328,11 +379,18 @@ intent:
         }:
             return None
 
+        learning_tool_results = (
+            self._learning_safe_tool_results(
+                intent,
+                tool_results,
+            )
+        )
+
         skill = self._derive_skill(
             intent=intent,
             user_goal=user_goal,
             plan_steps=plan_steps,
-            tool_results=tool_results,
+            tool_results=learning_tool_results,
             verifier_result=verifier_result,
         )
 

@@ -182,6 +182,7 @@ class Planner:
         )
 
         if intent in {
+            "coding",
             "filesystem",
             "app_launch",
             "foreground",
@@ -213,6 +214,91 @@ class Planner:
                 required_capabilities=[],
                 targets=[],
                 verify_mode="none",
+            )
+
+        if intent == "coding":
+            lowered = text.lower()
+            is_self_coding = any(
+                x in lowered
+                for x in [
+                    "清渊",
+                    "自己",
+                    "你自己",
+                    "你的代码",
+                    "你的项目",
+                    "myagent",
+                ]
+            )
+
+            # 自我开发任务的 Permit 必须绑定整个清渊代码根目录。
+            # 即使用户在句子里点名 C:\MyAgent\qingyuan\router.py，
+            # 也不能把“文件路径”误当成 Coding Session 的项目根。
+            if is_self_coding:
+                targets = [r"C:\MyAgent"]
+            else:
+                targets = self._extract_path_targets(text)
+
+            mutation_words = [
+                "修改", "改代码", "修复", "修bug", "修 bug",
+                "实现", "重构", "增加", "添加", "加入",
+                "写入", "写进", "保存到", "升级自己",
+            ]
+
+            read_only = (
+                any(x in text for x in [
+                    "只检查", "只分析", "只读", "不要修改",
+                ])
+                or (
+                    "检查项目代码" in text
+                    and not any(x in text for x in mutation_words)
+                )
+            )
+
+            capabilities = [
+                "file_read",
+            ]
+
+            # 只读代码检查不需要编译/测试/Git 权限。
+            # 只有真正会修改代码的任务才申请 code_execute。
+            if not read_only:
+                capabilities.append("code_execute")
+
+            steps = [
+                "申请仅限目标代码项目的读取与受限代码检查权限",
+                "建立 Coding Session，记录 Git HEAD/工作树基线但不自动提交",
+                "读取项目树和完成目标所需的最少代码文件",
+                "检查现有实现，不访问持久化数据、模型目录、环境目录或凭据",
+            ]
+
+            if not read_only:
+                capabilities.insert(
+                    1,
+                    "file_write",
+                )
+                steps.extend([
+                    "制定最小修改方案，不改用户没有要求的模块",
+                    "原子写入必要代码，并为本会话触碰文件保留内存回滚副本",
+                    "运行 compile，必要时运行 pytest/unittest；失败时根据真实错误修复后重试",
+                    "查看本会话文件 diff，确认没有超出用户原始目标",
+                    "只有最新 revision 通过检查后才完成 Coding Session；无法修复时只回滚本会话改动",
+                ])
+            else:
+                steps.extend([
+                    "只读取用户指定的代码并回答问题，不运行编译、测试或 Git 检查",
+                    "完成只读 Coding Session 并释放临时读取权限",
+                ])
+
+            steps.append(
+                "释放本任务全部临时权限"
+            )
+
+            return TaskPlan(
+                intent=intent,
+                goal=text,
+                steps=steps,
+                required_capabilities=capabilities,
+                targets=targets,
+                verify_mode="coding_result",
             )
 
         if intent == "browser_search":

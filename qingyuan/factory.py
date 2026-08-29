@@ -65,6 +65,18 @@ class ToolFactory:
             # system info
             "get_current_time": self.system.get_current_time,
 
+            # guarded coding agent
+            "code_begin_session": self.system.code_begin_session,
+            "code_session_status": self.system.code_session_status,
+            "code_project_tree": self.system.code_project_tree,
+            "code_read_file": self.system.code_read_file,
+            "code_write_file": self.system.code_write_file,
+            "code_git_status": self.system.code_git_status,
+            "code_git_diff": self.system.code_git_diff,
+            "code_run_checks": self.system.code_run_checks,
+            "code_rollback": self.system.code_rollback,
+            "code_finish_session": self.system.code_finish_session,
+
             # system power/session
             "system_power": self.system.system_power,
 
@@ -96,6 +108,21 @@ class ToolFactory:
             "remember_memory",
             "list_memories",
             "forget_memory",
+        ],
+
+        "coding": [
+            "authorize_task",
+            "code_begin_session",
+            "code_session_status",
+            "code_project_tree",
+            "code_read_file",
+            "code_write_file",
+            "code_git_status",
+            "code_git_diff",
+            "code_run_checks",
+            "code_rollback",
+            "code_finish_session",
+            "end_task",
         ],
 
         "filesystem": [

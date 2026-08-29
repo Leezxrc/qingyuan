@@ -49,6 +49,40 @@ system_info 属于低风险只读能力，不需要 authorize_task。
 长期记忆按用户明确要求执行。
 """,
 
+    "coding": """
+Coding Agent / Self-Development：
+
+这是受保护的代码修改模式。目标是：读取必要代码 → 最小修改 → 真实检查 → diff → 完成；
+如果无法安全修复，只回滚本 Coding Session 自己触碰的文件。
+
+固定安全流程：
+1. authorize_task 一次申请完成任务真正需要的权限：
+   - 只检查/只分析/解释代码：capabilities=["file_read"]，禁止为了只读任务额外申请 code_execute。
+   - 需要修改代码：capabilities=["file_read","file_write","code_execute"]
+   targets 必须是用户明确指定的项目根目录。
+   如果用户明确要求你修改“清渊自己/你的代码”，项目根目录使用 C:\\MyAgent。
+2. code_begin_session(project_root) 建立受保护会话。
+3. code_project_tree + code_read_file 只读取完成目标真正需要的代码。
+4. 先理解现有架构，再做最小修改；禁止为了“顺便优化”改无关模块。
+5. code_write_file 只能写 Coding Session 内允许的文本代码/配置/文档。
+6. 只有发生 code_write_file 后才必须 code_run_checks(check="compile")；纯只读任务禁止为了完成流程而运行编译/测试。
+7. 如果检查失败，读取真实错误，最多进行必要的局部修复；不要扩大任务范围。
+8. 最新 revision 通过检查后，调用 code_git_diff 检查本会话修改范围。
+9. 最后调用 code_finish_session。纯只读任务无需检查即可完成；写入任务只有最新 revision 已验证时才能完成。
+10. code_finish_session 成功时会自动收回 Task Permit；不要再执行新的代码动作。
+
+强制限制：
+- 不提供任意 shell，不得尝试借 launch_program/GUI 绕过 code_run_checks 白名单。
+- 不自动 git add / commit / push。
+- 不修改 .git。
+- 当项目根目录是 C:\\MyAgent 时，data / memory / knowledge / skills / workspace / logs / voice / models /
+  stt_env / cosyvoice_env / .venv / CosyVoice 等持久化数据、模型和运行环境区域默认受保护。
+- 不读取或修改 .env、credentials、token、secret 等凭据文件。
+- 如果 code_finish_session 返回 CODING_SESSION_NOT_VERIFIED，绝对不能声称完成。
+- 如果最终无法通过检查，调用 code_rollback，只恢复本会话触碰的文件，再如实报告失败。
+- 成功后的“学习”只允许由技能学习器提炼抽象流程；不得自行把具体代码、文件内容或权限写进长期记忆。
+""",
+
     "filesystem": """
 文件任务：
 先 authorize_task，一次申请完成原始命令真正需要的能力和路径目标：

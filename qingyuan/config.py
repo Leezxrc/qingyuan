@@ -57,6 +57,9 @@ TASK_CAPABILITIES = {
     # system power/session control
     "power_control",
 
+    # guarded local code execution (compile/tests/git read-only helpers)
+    "code_execute",
+
     # filesystem mutation
     "file_write",
     "file_move",

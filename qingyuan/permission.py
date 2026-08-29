@@ -17,6 +17,7 @@ CAPABILITY_LABELS = {
     "scroll": "页面滚动",
     "app_launch": "启动程序",
     "power_control": "系统电源/会话控制",
+    "code_execute": "运行代码编译/项目测试/Git只读检查",
     "file_write": "创建/修改文件",
     "file_move": "移动/重命名文件",
     "file_delete": "删除文件/文件夹",
@@ -76,7 +77,7 @@ class TaskPermissionBroker:
         capabilities:
             screen_read / window_read / file_read /
             window_control / mouse / keyboard / scroll /
-            app_launch / power_control /
+            app_launch / power_control / code_execute /
             file_write / file_move / file_delete
 
         targets:

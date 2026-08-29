@@ -38,7 +38,7 @@ TTS_SCRIPT = TTS_DIR / "qingyuan_tts_server.py"
 TTS_HEALTH = "http://127.0.0.1:8765/health"
 
 STT_DIR = BASE_DIR
-STT_PYTHON = BASE_DIR / "stt_env" / "Scripts" / "python.exe"
+STT_PYTHON = Path(r"C:\Users\leezx\miniconda3\envs\chatAudio\python.exe")
 STT_SCRIPT = BASE_DIR / "qingyuan_stt_server.py"
 STT_HEALTH = "http://127.0.0.1:8766/health"
 

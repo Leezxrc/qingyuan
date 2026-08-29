@@ -1,0 +1,7 @@
+Voice Core 3 Phase 1.2 test-only correction
+
+The previous test searched for the literal characters "\\ndef ..." instead of
+an actual newline boundary, so it could not find the next function.
+
+This package changes ONLY the test files.
+Runtime Voice Core 3 Phase 1.2 code is unchanged.

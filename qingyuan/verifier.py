@@ -34,6 +34,45 @@ class Verifier:
             for _, result in tool_results
         ]
 
+        # Coding Agent 允许“先检查失败 → 修复 → 最新 revision 检查成功”。
+        # 因此 coding_result 必须在通用 failure_markers 之前判断，
+        # 避免被已经被后续成功检查取代的旧 CHECK_FAILED 误伤。
+        if plan.verify_mode == "coding_result":
+            finish_results = [
+                str(result)
+                for name, result in tool_results
+                if name == "code_finish_session"
+            ]
+
+            if finish_results:
+                last_finish = finish_results[-1]
+
+                if "CODING_SESSION_FINISHED" in last_finish:
+                    return VerificationResult(
+                        True,
+                        "Coding Session 已通过最新 revision 检查并正式完成。",
+                    )
+
+                return VerificationResult(
+                    False,
+                    last_finish[:500],
+                )
+
+            if any(
+                name == "code_rollback"
+                and "CODE_ROLLBACK_OK" in str(result)
+                for name, result in tool_results
+            ):
+                return VerificationResult(
+                    False,
+                    "代码任务未完成；本会话改动已安全回滚。",
+                )
+
+            return VerificationResult(
+                False,
+                "Coding Session 尚未调用 code_finish_session 完成验证。",
+            )
+
         failure_markers = [
             "失败",
             "拒绝",

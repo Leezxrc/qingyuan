@@ -1,0 +1,31 @@
+{
+  "skill_key": "code_analysis",
+  "name": "代码分析",
+  "description": "分析指定模块的职责和逻辑结构",
+  "triggers": [
+    "检查代码职责",
+    "分析模块功能"
+  ],
+  "parameters": [
+    "<chat_target>",
+    "<message>",
+    "<query>",
+    "<path>"
+  ],
+  "steps": [
+    "申请仅限目标代码项目的读取与受限代码检查权限",
+    "建立 Coding Session，记录 Git HEAD/工作树基线但不自动提交",
+    "读取项目树和完成目标所需的最少代码文件",
+    "检查指定路径的代码文件，分析其负责的逻辑和接口定义",
+    "完成只读 Coding Session 并释放临时读取权限",
+    "释放本任务全部临时权限"
+  ],
+  "required_capabilities": [
+    "file_read"
+  ],
+  "verification": "通过 revision 检查并确认权限已释放",
+  "safety": "Skill 仅提供经验流程，每次执行仍必须经过 Task Permit。",
+  "source": "learned_from_success",
+  "success_count": 1,
+  "last_updated": 1787860454.4367862
+}

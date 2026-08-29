@@ -1,0 +1,13 @@
+Voice Core 3 Phase 1 test-only correction
+
+The original test incorrectly asserted that the source code must not contain
+the text “关键词：”. The runtime intentionally contains keyword-related text
+inside the ASR hallucination rejection guard/comments, so that assertion was
+invalid.
+
+This test fix checks the actual requirement instead:
+- no initial_prompt injection
+- no vocabulary_prompt() injection
+- prompt-artifact rejection guard exists
+
+No runtime code is changed by this package.

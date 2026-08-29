@@ -8,6 +8,7 @@ class IntentRouter:
     """
 
     ACTION_INTENTS = {
+        "coding",
         "filesystem",
         "app_launch",
         "foreground",
@@ -57,6 +58,114 @@ class IntentRouter:
             for phrase in time_phrases
         ):
             return "system_info"
+
+        # --------------------------------------------------
+        # guarded coding / self-development
+        # --------------------------------------------------
+        # 只在用户明确要求“修改/实现/修复项目代码”时进入 coding。
+        # 单纯问“这段代码是什么意思/帮我写个示例”仍属于 chat。
+        coding_action_phrases = [
+            "修改代码",
+            "改代码",
+            "修复代码",
+            "修代码",
+            "修复bug",
+            "修 bug",
+            "修bug",
+            "改bug",
+            "写入项目",
+            "写进项目",
+            "在项目里实现",
+            "在项目中实现",
+            "实现到项目",
+            "给自己增加",
+            "给自己加",
+            "给清渊增加",
+            "给清渊加",
+            "给你自己增加",
+            "给你自己加",
+            "升级自己",
+            "修改清渊",
+            "改清渊",
+            "修复清渊",
+            "检查项目代码",
+            "检查你的代码",
+            "检查你自己的代码",
+            "检查清渊代码",
+            "只检查代码",
+            "检查代码并修复",
+            "运行代码测试",
+            "跑代码测试",
+            "跑测试并修",
+            "重构项目",
+            "重构代码",
+        ]
+
+        coding_nouns = [
+            "代码",
+            "源码",
+            "项目",
+            "仓库",
+            "repo",
+            "repository",
+            "模块",
+            "脚本",
+        ]
+
+        coding_verbs = [
+            "修改",
+            "改",
+            "修复",
+            "实现",
+            "重构",
+            "增加功能",
+            "添加功能",
+            "加入功能",
+            "写入",
+            "保存到",
+            "测试并修复",
+        ]
+
+        self_coding = (
+            any(x in q for x in [
+                "清渊",
+                "你自己",
+                "你的代码",
+                "你的项目",
+                "自己",
+                "myagent",
+            ])
+            and any(x in q for x in coding_verbs)
+        )
+
+        explicit_coding = any(
+            phrase in q
+            for phrase in coding_action_phrases
+        )
+
+        project_coding = (
+            any(x in q for x in coding_nouns)
+            and any(x in q for x in coding_verbs)
+            and any(x in q for x in [
+                "文件",
+                "目录",
+                "路径",
+                "c:\\",
+                "workspace",
+                "工作区",
+                "git",
+                "github",
+                "项目",
+                "仓库",
+            ])
+        )
+
+        if (
+            explicit_coding
+            or self_coding
+            or project_coding
+        ):
+            return "coding"
 
         # memory
         #
